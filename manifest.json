@@ -1,0 +1,12 @@
+{
+    "display_name": "Markdown Tables",
+    "loading_order": 100,
+    "requires": [],
+    "optional": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "LoneTitan01",
+    "version": "1.0.0",
+    "homePage": "https://github.com/LoneTitan01/SillyTavern-Markdown-Tables",
+    "auto_update": true
+}

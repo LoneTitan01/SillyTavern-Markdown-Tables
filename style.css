@@ -1,0 +1,37 @@
+.mes_text .mdt-wrap {
+    overflow-x: auto;
+    margin: 0.5em 0;
+}
+
+.mes_text table.mdt-table,
+body.mdt-style-all .mes_text table {
+    border-collapse: collapse;
+    width: auto;
+    max-width: 100%;
+    margin: 0.5em 0;
+    font-size: 0.95em;
+}
+
+.mes_text table.mdt-table th,
+.mes_text table.mdt-table td,
+body.mdt-style-all .mes_text table th,
+body.mdt-style-all .mes_text table td {
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.2));
+    padding: 0.3em 0.6em;
+    vertical-align: top;
+}
+
+.mes_text table.mdt-table th,
+body.mdt-style-all .mes_text table th {
+    background-color: var(--black30a, rgba(0, 0, 0, 0.3));
+    font-weight: bold;
+}
+
+.mes_text table.mdt-table tbody tr:nth-child(even),
+body.mdt-style-all .mes_text table tbody tr:nth-child(even) {
+    background-color: var(--white20a, rgba(255, 255, 255, 0.05));
+}
+
+.mes_text table.mdt-table p {
+    margin: 0;
+}
