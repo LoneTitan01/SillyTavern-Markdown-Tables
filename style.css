@@ -35,3 +35,67 @@ body.mdt-style-all .mes_text table tbody tr:nth-child(even) {
 .mes_text table.mdt-table p {
     margin: 0;
 }
+
+/* Collapsible dropdown */
+.mes_text details.mdt-details {
+    margin: 0.5em 0;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.2));
+    border-radius: 6px;
+    background-color: var(--black30a, rgba(0, 0, 0, 0.15));
+    max-width: 100%;
+    width: fit-content;
+}
+
+.mes_text details.mdt-details > summary.mdt-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    padding: 0.35em 0.6em;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+}
+
+.mes_text details.mdt-details > summary.mdt-summary::-webkit-details-marker {
+    display: none;
+}
+
+.mes_text details.mdt-details > summary.mdt-summary::before {
+    content: '\25B6';
+    font-size: 0.7em;
+    opacity: 0.7;
+    transition: transform 0.15s ease;
+}
+
+.mes_text details.mdt-details[open] > summary.mdt-summary::before {
+    transform: rotate(90deg);
+}
+
+.mes_text details.mdt-details > summary.mdt-summary:hover {
+    background-color: var(--white20a, rgba(255, 255, 255, 0.05));
+}
+
+.mes_text .mdt-summary-cells {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3em;
+    font-weight: bold;
+}
+
+.mes_text .mdt-summary-cell {
+    padding: 0.05em 0.5em;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.2));
+    border-radius: 4px;
+}
+
+.mes_text .mdt-summary-count {
+    margin-left: auto;
+    font-size: 0.85em;
+    opacity: 0.6;
+    white-space: nowrap;
+}
+
+.mes_text details.mdt-details > .mdt-wrap {
+    margin: 0;
+    padding: 0 0.6em 0.6em;
+}

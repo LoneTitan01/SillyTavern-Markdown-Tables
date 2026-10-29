@@ -96,7 +96,15 @@ export function parseSeparator(html) {
     });
 }
 
-function buildTable(header, aligns, rows) {
+export function buildSummary(header, rowCount) {
+    const cells = header
+        .map(c => `<span class="mdt-summary-cell">${c || '&nbsp;'}</span>`)
+        .join('');
+    const count = `<span class="mdt-summary-count">${rowCount} ${rowCount === 1 ? 'row' : 'rows'}</span>`;
+    return `<summary class="mdt-summary"><span class="mdt-summary-cells">${cells}</span>${count}</summary>`;
+}
+
+function buildTable(header, aligns, rows, collapsible) {
     const cols = aligns.length;
     const cell = (tag, content, idx) => {
         const align = aligns[idx] ? ` style="text-align: ${aligns[idx]}"` : '';
@@ -112,13 +120,19 @@ function buildTable(header, aligns, rows) {
     html += '<thead>' + row('th', header) + '</thead>';
     if (rows.length) html += '<tbody>' + rows.map(r => row('td', r)).join('') + '</tbody>';
     html += '</table></div>';
+
+    if (collapsible) {
+        html = `<details class="mdt-details">${buildSummary(header, rows.length)}${html}</details>`;
+    }
     return html;
 }
 
 // Converts any pipe tables inside a block of HTML (usually a <p>'s contents).
 // Returns null if no table was found. Otherwise returns a list of pieces:
 // { type: 'text', html } for surrounding text and { type: 'table', html }.
-export function convertBlock(html) {
+// With collapsible set, each table is wrapped in a <details> dropdown whose
+// label shows the header row.
+export function convertBlock(html, { collapsible = false } = {}) {
     if (!html.includes('|')) return null;
 
     const { lines, delims } = splitLines(html);
@@ -159,7 +173,7 @@ export function convertBlock(html) {
         }
 
         flushText(i);
-        pieces.push({ type: 'table', html: buildTable(header, aligns, rows) });
+        pieces.push({ type: 'table', html: buildTable(header, aligns, rows, collapsible) });
         found = true;
         textStart = j;
         i = j;
