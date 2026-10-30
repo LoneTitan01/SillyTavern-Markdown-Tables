@@ -116,7 +116,7 @@ function buildTable(header, aligns, rows, collapsible) {
         return out + '</tr>';
     };
 
-    let html = '<div class="mdt-wrap"><table class="mdt-table">';
+    let html = '<div class="mdt-wrap"><table class="mdt-table mdt-fixed">';
     html += '<thead>' + row('th', header) + '</thead>';
     if (rows.length) html += '<tbody>' + rows.map(r => row('td', r)).join('') + '</tbody>';
     html += '</table></div>';

@@ -12,6 +12,10 @@ const defaultSettings = Object.freeze({
 // position, so the state survives the message being redrawn (streaming, edits).
 const openState = new Map();
 
+// Column widths (in percent) the user dragged to, keyed the same way.
+const columnWidths = new Map();
+const MIN_COLUMN_WIDTH = 5;
+
 function getSettings() {
     const { extensionSettings } = SillyTavern.getContext();
     if (!extensionSettings[MODULE_NAME]) {
@@ -52,8 +56,99 @@ function processMessage(mesText) {
         if (block.closest('pre, code, table, .edit_textarea')) continue;
         processBlock(block);
     }
+    fixNativeColumns(mesText);
     if (getSettings().collapsible) wrapNativeTables(mesText);
     setupDropdowns(mesText);
+    setupResizing(mesText);
+}
+
+// Adds a drag handle to each column border in the header row. Dragging moves
+// width between the two columns beside the border, so the table stays full
+// width. Double-clicking a border resets the table to equal columns.
+function setupResizing(mesText) {
+    const mesId = mesText.closest('.mes')?.getAttribute('mesid') ?? '';
+    mesText.querySelectorAll('table.mdt-fixed').forEach((table, index) => {
+        if (table.dataset.mdtResizable) return;
+        const cells = [...(table.querySelector('tr')?.children ?? [])];
+        if (cells.length < 2 || cells.some(c => c.colSpan > 1)) return;
+        table.dataset.mdtResizable = 'true';
+
+        const key = `${mesId}:${index}`;
+        const even = () => cells.map(() => 100 / cells.length);
+        const saved = columnWidths.get(key);
+        let widths = saved?.length === cells.length ? [...saved] : even();
+
+        const colgroup = document.createElement('colgroup');
+        const cols = cells.map(() => colgroup.appendChild(document.createElement('col')));
+        const caption = table.querySelector(':scope > caption');
+        if (caption) caption.after(colgroup);
+        else table.prepend(colgroup);
+
+        const apply = () => cols.forEach((col, i) => { col.style.width = `${widths[i]}%`; });
+        apply();
+
+        cells.slice(0, -1).forEach((cell, i) => {
+            const handle = document.createElement('div');
+            handle.className = 'mdt-resizer';
+            handle.title = 'Drag to resize. Double-click to reset.';
+
+            handle.addEventListener('pointerdown', event => {
+                if (event.button !== 0) return;
+                event.preventDefault();
+                event.stopPropagation();
+                try { handle.setPointerCapture(event.pointerId); } catch { /* pointer already gone */ }
+                handle.classList.add('mdt-resizing');
+
+                const startX = event.clientX;
+                const tableWidth = table.getBoundingClientRect().width || 1;
+                const left = widths[i];
+                const pair = widths[i] + widths[i + 1];
+
+                const onMove = moveEvent => {
+                    const delta = (moveEvent.clientX - startX) / tableWidth * 100;
+                    widths[i] = Math.min(pair - MIN_COLUMN_WIDTH, Math.max(MIN_COLUMN_WIDTH, left + delta));
+                    widths[i + 1] = pair - widths[i];
+                    apply();
+                };
+                const onEnd = () => {
+                    handle.classList.remove('mdt-resizing');
+                    handle.removeEventListener('pointermove', onMove);
+                    handle.removeEventListener('pointerup', onEnd);
+                    handle.removeEventListener('pointercancel', onEnd);
+                    columnWidths.set(key, [...widths]);
+                };
+                handle.addEventListener('pointermove', onMove);
+                handle.addEventListener('pointerup', onEnd);
+                handle.addEventListener('pointercancel', onEnd);
+            });
+
+            handle.addEventListener('click', event => event.stopPropagation());
+            handle.addEventListener('dblclick', event => {
+                event.stopPropagation();
+                widths = even();
+                apply();
+                columnWidths.delete(key);
+            });
+
+            cell.append(handle);
+        });
+    });
+}
+
+// Gives tables that SillyTavern rendered itself the same equal-width columns.
+function fixNativeColumns(mesText) {
+    for (const table of mesText.querySelectorAll('table:not(.mdt-fixed)')) {
+        if (table.closest('pre, code')) continue;
+        table.classList.add('mdt-fixed');
+
+        // Keep native tables in the same wrapper the dropdown expects.
+        if (!table.parentElement.classList.contains('mdt-wrap')) {
+            const wrap = document.createElement('div');
+            wrap.className = 'mdt-wrap';
+            table.replaceWith(wrap);
+            wrap.append(table);
+        }
+    }
 }
 
 // Puts tables that SillyTavern rendered itself into the same dropdown.
@@ -68,11 +163,10 @@ function wrapNativeTables(mesText) {
         const details = document.createElement('details');
         details.className = 'mdt-details';
         details.innerHTML = buildSummary(header, rowCount);
-        const wrap = document.createElement('div');
-        wrap.className = 'mdt-wrap';
 
-        table.replaceWith(details);
-        wrap.append(table);
+        // fixNativeColumns has already put the table in a scroll wrapper.
+        const wrap = table.closest('.mdt-wrap') ?? table;
+        wrap.replaceWith(details);
         details.append(wrap);
     }
 }
@@ -229,7 +323,10 @@ async function addSettingsPanel() {
     // Backup in case a render happens outside the observed element.
     const { eventSource, event_types } = SillyTavern.getContext();
     const rerun = () => requestAnimationFrame(processAll);
-    eventSource.on(event_types.CHAT_CHANGED, () => openState.clear());
+    eventSource.on(event_types.CHAT_CHANGED, () => {
+        openState.clear();
+        columnWidths.clear();
+    });
     for (const name of ['CHAT_CHANGED', 'MESSAGE_UPDATED', 'MESSAGE_SWIPED', 'CHARACTER_MESSAGE_RENDERED', 'USER_MESSAGE_RENDERED', 'MORE_MESSAGES_LOADED']) {
         if (event_types[name]) eventSource.on(event_types[name], rerun);
     }

@@ -16,7 +16,7 @@ Models often write tables that SillyTavern shows as raw text full of pipes, for 
 - Supports column alignment (`:---`, `:---:`, `---:`), optional leading and trailing pipes, escaped pipes (`\|`), and pipes inside `` `code` ``.
 - Keeps inline formatting (bold, italics, code) inside cells.
 - Leaves code blocks alone.
-- Wide tables scroll sideways instead of overflowing the message.
+- Tables fill the message width and start with all columns the same width. Drag a border in the header row to resize the columns on either side, or double-click it to reset to even. Long cell text wraps.
 - Table colors follow your SillyTavern theme.
 
 ## Installation

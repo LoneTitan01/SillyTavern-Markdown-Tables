@@ -43,7 +43,6 @@ body.mdt-style-all .mes_text table tbody tr:nth-child(even) {
     border-radius: 6px;
     background-color: var(--black30a, rgba(0, 0, 0, 0.15));
     max-width: 100%;
-    width: fit-content;
 }
 
 .mes_text details.mdt-details > summary.mdt-summary {
@@ -98,4 +97,51 @@ body.mdt-style-all .mes_text table tbody tr:nth-child(even) {
 .mes_text details.mdt-details > .mdt-wrap {
     margin: 0;
     padding: 0 0.6em 0.6em;
+}
+
+/* Tables fill the message width, split into equal columns. */
+body .mes_text table.mdt-fixed {
+    table-layout: fixed;
+    width: 100%;
+    max-width: 100%;
+}
+
+body .mes_text table.mdt-fixed th,
+body .mes_text table.mdt-fixed td {
+    overflow-wrap: anywhere;
+}
+
+/* Draggable column borders */
+body .mes_text table.mdt-fixed th,
+body .mes_text table.mdt-fixed td {
+    position: relative;
+}
+
+.mes_text .mdt-resizer {
+    position: absolute;
+    top: 0;
+    right: -5px;
+    width: 10px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 1;
+    touch-action: none;
+    user-select: none;
+}
+
+.mes_text .mdt-resizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 4px;
+    width: 2px;
+    background-color: var(--SmartThemeQuoteColor, #e18a24);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.mes_text .mdt-resizer:hover::after,
+.mes_text .mdt-resizer.mdt-resizing::after {
+    opacity: 1;
 }
